@@ -1,15 +1,26 @@
 {
   "name": "goatbot",
   "version": "1.0.0",
+  "description": "A Discord bot built with Node.js",
+  "author": "bossbenjamin73-alt",
+  "license": "MIT",
+  "repository": "https://github.com/bossbenjamin73-alt/Goatbot_new",
   "main": "src/index.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "express": "^4.18.2",
     "body-parser": "^1.20.2",
-    "request": "^2.88.2",
     "axios": "^1.7.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   }
 }
 
