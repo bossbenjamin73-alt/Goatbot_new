@@ -1,17 +1,21 @@
+const express = require("express");
 const axios = require("axios");
+const bodyParser = require("body-parser");
+
+const app = express();
+app.use(bodyParser.json());
 
 // Fonction pour envoyer un message à Messenger
 function callSendAPI(senderId, message) {
-  const request = require("request");
-  request({
-    uri: "https://graph.facebook.com/v16.0/me/messages",
-    qs: { access_token: process.env.PAGE_TOKEN },
-    method: "POST",
-    json: { recipient: { id: senderId }, message: { text: message } }
-  }, (err, res, body) => {
-    if (err) console.error("Erreur API :", err);
-    else console.log("Message envoyé :", body);
-  });
+  const axios = require("axios");
+  axios.post("https://graph.facebook.com/v16.0/me/messages", {
+    recipient: { id: senderId },
+    message: { text: message }
+  }, {
+    params: { access_token: process.env.PAGE_TOKEN }
+  })
+  .then(res => console.log("Message envoyé :", res.data))
+  .catch(err => console.error("Erreur API :", err.message));
 }
 
 // Fonction pour appeler Google Gemini et générer une réponse
@@ -29,7 +33,7 @@ async function getResponseFromGemini(userMessage) {
       }
     });
 
-    return res.data?.text || "Je n'ai pas pu générer de réponse.";
+    return res.data?.candidates?.[0]?.content?.parts?.[0]?.text || "Je n'ai pas pu générer de réponse.";
   } catch (error) {
     console.error("Erreur Gemini :", error.response?.data || error.message);
     return "Je n'ai pas pu générer de réponse.";
@@ -54,4 +58,24 @@ app.post("/webhook", async (req, res) => {
   } else {
     res.sendStatus(404);
   }
+});
+
+// GET webhook pour la vérification
+app.get("/webhook", (req, res) => {
+  const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+  const mode = req.query["hub.mode"];
+  const token = req.query["hub.verify_token"];
+  const challenge = req.query["hub.challenge"];
+
+  if (mode === "subscribe" && token === VERIFY_TOKEN) {
+    res.status(200).send(challenge);
+  } else {
+    res.sendStatus(403);
+  }
+});
+
+// Démarrage du serveur
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Bot Goatbot lancé sur le port ${PORT}`);
 });
